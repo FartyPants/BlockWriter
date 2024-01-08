@@ -762,7 +762,7 @@ def ui():
                                     gr_btn_generate = gr.Button(value='Generate',visible=True,variant="primary")
                                     gr_btn_generate_continue = gr.Button(value='Continue',visible=True)
                                     gr_btn_stop = gr.Button(value='Stop',visible=True,elem_classes="small-button")
-                            with gr.Tab('Completition'):
+                            with gr.Tab('Completion'):
                                 with gr.Row():
                                     gr_btn_generate_np = gr.Button(value='Generate [C]',variant="primary", visible=True)
                                     gr_btn_generate_continue_np = gr.Button(value='Continue [C]',visible=True)
