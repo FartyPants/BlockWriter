@@ -9,3 +9,8 @@ This is WIP (basic functionality is done, but I HAVE BIGGER PLANS, whoaaa, like 
 ![image](https://github.com/FartyPants/BlockWriter/assets/23346289/cff8fb2b-1338-4670-b0bd-5fa7f53e4a81)
 
 
+# TODO
+- A block can be turned into Summary
+- create summary of the previous scenes
+- Settings how many previous blocks to insert before the prompt.
+
