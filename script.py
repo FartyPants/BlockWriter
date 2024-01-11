@@ -31,7 +31,12 @@ params = {
         "display_name": "BlockWriter",
         "is_tab": True,
         "selectA": [0,0],
+        'projectname':"myproject",
+        'auto_clear': True,
+        'include_history': True,
+        'include_history_nr':5,
 }
+
 
 
 help_str = """
@@ -116,6 +121,27 @@ def add_item_auto(scene_prefix, prompt_string, scene_text):
     global selected_item_prompt
     global selected_item_scenetext
 
+    # Check if data_structure has any data
+    if len(data_structure)>0:
+        # Get the last item in data_structure
+        last_item = data_structure[-1]
+
+        # Check if the last item has "prompt" == '' and "scenetext" == ''
+        if last_item["prompt"] == '' and last_item["scenetext"] == '':
+            # Overwrite the last item with new values
+            last_item["prompt"] = prompt_string
+            last_item["scenetext"] = scene_text
+            last_item["is_summary"] = False
+
+            # Update selected_item, selected_item_prompt, and selected_item_scenetext
+            selected_item = last_item["outline"]
+            selected_item_prompt = last_item["prompt"]
+            selected_item_scenetext = last_item["scenetext"]
+            # Update data_structure with the modified last_item
+            data_structure[-1] = last_item
+            return  # Exit the function without adding a new item
+
+
     outline_name = generate_unique_outline_name(scene_prefix)
     new_item = {"outline": outline_name, "prompt": prompt_string, "scenetext": scene_text, "is_summary": False}
 
@@ -157,6 +183,37 @@ def generate_combined_text():
     full_text = '\n\n'.join(item["scenetext"] for item in data_structure)
     full_text = full_text.strip()
     return full_text
+
+def generate_combined_text_until_current_with_history(max_last):
+    global data_structure
+    global selected_item
+    outline_name = selected_item
+    count_before_outline = 0
+    temp_hist = []
+
+    if max_last > 0:
+        for item in data_structure:
+            if item["outline"] == outline_name:
+                break  # Stop when the specified outline_name is reached
+
+            # Check if we've reached the limit of history_number
+            if count_before_outline < max_last:
+                temp_hist.append(item["scenetext"])
+            else:
+                # If we've reached the limit, remove the oldest entry
+                temp_hist.pop(0)
+                temp_hist.append(item["scenetext"])
+
+            count_before_outline += 1
+
+
+    combined_text = ""
+    for item_txt in temp_hist:
+        combined_text += item_txt + '\n\n'
+    text_until = combined_text.rstrip('\n\n')  # Remove trailing newline if any
+
+    return text_until 
+
 
 def generate_combined_text_until_current():
     global data_structure
@@ -368,17 +425,39 @@ def generate_reply_wrapperMY(text_prompt, existing_text_in_output, state, _conti
     last_history = {'visible': [], 'internal': []} 
 
     # fill history with previous text
-
-
     outline_name = selected_item
-    for item in data_structure:
-        if item["outline"] == outline_name:
-            break  # Stop when the specified outline_name is reached
+    count_before_outline = 0
 
-        hist_prompt = item["prompt"]
-        hist_response = item["scenetext"]    
-        last_history['internal'].append([hist_prompt, hist_response])
-        last_history['visible'].append([hist_prompt, hist_response])
+    if params['include_history_nr'] > 0 and params['include_history']:
+        for item in data_structure:
+            if item["outline"] == outline_name:
+                break  # Stop when the specified outline_name is reached
+
+            hist_prompt = item["prompt"]
+            hist_response = item["scenetext"]
+
+            # Check if we've reached the limit of history_number
+            if count_before_outline < params['include_history_nr']:
+                last_history['internal'].append([hist_prompt, hist_response])
+                last_history['visible'].append([hist_prompt, hist_response])
+            else:
+                # If we've reached the limit, remove the oldest entry
+                last_history['internal'].pop(0)
+                last_history['visible'].pop(0)
+                last_history['internal'].append([hist_prompt, hist_response])
+                last_history['visible'].append([hist_prompt, hist_response])
+
+            count_before_outline += 1
+
+  
+    #for item in data_structure:
+    #    if item["outline"] == outline_name:
+    #        break  # Stop when the specified outline_name is reached
+
+    #    hist_prompt = item["prompt"]
+    #    hist_response = item["scenetext"]    
+    #    last_history['internal'].append([hist_prompt, hist_response])
+    #    last_history['visible'].append([hist_prompt, hist_response])
            
     
 
@@ -567,7 +646,10 @@ def generate_reply_wrapperMY_NP(text_prompt, existing_text_in_output, state, _co
     last_history = {'visible': [], 'internal': []} 
 
     # fill history with previous text
-    story_so_far = generate_combined_text_until_current()
+    if params['include_history_nr']>0 and params['include_history']:
+        story_so_far = generate_combined_text_until_current_with_history(params['include_history_nr'])
+    else:
+        story_so_far = ''
 
     stopping_strings = chat.get_stopping_strings(state)
 
@@ -714,17 +796,14 @@ def get_available_projects():
     sortedlist.insert(0, "None")
     return sortedlist
 
-g_projectname = "myproject"
 
 def ui():
     global params
-    global basepath
     global selected_item
     global selected_item_prompt
     global selected_item_scenetext
     global full_text
     global full_text_until
-    global g_projectname
 
 
     params['selectA'] = [0,0]
@@ -757,19 +836,24 @@ def ui():
                     with gr.Column(scale = 4):
                         gr_prompt = gr.Textbox(value=selected_item_prompt ,lines=4,visible=True, label='Prompt')
                         with gr.Row():
-                            with gr.Tab('Instruction'):
+                            with gr.Tab('Instruct Chat'):
                                 with gr.Row():
                                     gr_btn_generate = gr.Button(value='Generate',visible=True,variant="primary")
                                     gr_btn_generate_continue = gr.Button(value='Continue',visible=True)
-                                    gr_btn_stop = gr.Button(value='Stop',visible=True,elem_classes="small-button")
-                            with gr.Tab('Completion'):
+                                    gr_btn_stop = gr.Button(value='Stop',visible=True) #elem_classes="small-button")
+                            with gr.Tab('Text Completion'):
                                 with gr.Row():
-                                    gr_btn_generate_np = gr.Button(value='Generate [C]',variant="primary", visible=True)
-                                    gr_btn_generate_continue_np = gr.Button(value='Continue [C]',visible=True)
-                                    gr_btn_stop_np = gr.Button(value='Stop',visible=True,elem_classes="small-button")
-                                    
-                            
-
+                                    gr_btn_generate_np = gr.Button(value='Generate Text',variant="primary", visible=True)
+                                    gr_btn_generate_continue_np = gr.Button(value='Continue Text',visible=True)
+                                    gr_btn_stop_np = gr.Button(value='Stop',visible=True)
+                                with gr.Row():
+                                    gr.Markdown('Works like a notebook. The text will be generated as a completion using the scenes before. Prompt can be used to steer the text generation)')    
+                            with gr.Tab('Settings'):
+                                with gr.Row():        
+                                    #gr_auto_clear = gr.Checkbox(label = "Auto Clear Prompt", value = params['auto_clear'])    
+                                    gr_include_history = gr.Checkbox(label = "Include History", value = params['include_history']) 
+                                    include_last_history = gr.Slider(value = params['include_history_nr'],step = 1, minimum=0, maximum=50, label='Number of last History to Include')
+                                  
                     with gr.Column(scale = 1):
                         gr.Markdown('')    
                 with gr.Row():
@@ -794,7 +878,7 @@ def ui():
                     gr_EditNewProj = gr.Button(value='Are you sure?',variant="primary",visible=False)
                     gr_EditNewProjCancel = gr.Button(value='Cancel',visible=False)
                 gr_btn_saveproject = gr.Button(value='Save Project',visible=True)
-                gr_EditName = gr.Textbox(value=g_projectname,lines=1,visible=False, label='Project Name')
+                gr_EditName = gr.Textbox(value=params['projectname'],lines=1,visible=False, label='Project Name')
                 with gr.Row():
                     gr_EditNameSave = gr.Button(value='Save',variant="primary",visible=False)
                     gr_EditNameCancel = gr.Button(value='Cancel',visible=False)
@@ -804,6 +888,7 @@ def ui():
                     gr_EditNameLoad = gr.Button(value='Load',visible=False,variant="primary")
                     gr_EditNameLCancel = gr.Button(value='Cancel',visible=False)
             with gr.Column(scale=4): 
+             
                 gr.Markdown(help_str)
 
     def full_update_ui():
@@ -846,7 +931,7 @@ def ui():
     gr_EditNewProj.click(create_new_project,None,None).then(hide_new_proj,None,[gr_EditNewProj,gr_EditNewProjCancel]).then(full_update_ui,None,[gr_scenes_radio,gr_itemname,gr_prompt,gr_generated_text,gr_prevtext,gr_fulltext])
 
     def show_proj_save():
-        return gr.Textbox.update(value = g_projectname, interactive= True, visible=True),gr.Button.update(visible=True),gr.Button.update(visible=True)
+        return gr.Textbox.update(value = params['projectname'], interactive= True, visible=True),gr.Button.update(visible=True),gr.Button.update(visible=True)
 
     def hide_proj_save():
         return gr.Textbox.update(visible=False),gr.Button.update(visible=False),gr.Button.update(visible=False)
@@ -856,8 +941,8 @@ def ui():
     gr_EditNameCancel.click(hide_proj_save,None,[gr_EditName,gr_EditNameSave,gr_EditNameCancel])
 
     def project_save(projname):
-        global g_projectname
-        g_projectname = projname
+        global params
+        params['projectname'] = projname
         projpath = save_proj_path +"/"+ projname+".json"
         save_to_json(projpath)
 
@@ -876,8 +961,8 @@ def ui():
     gr_EditNameLCancel.click(hide_project_dropdown,None,[gr_projh_drop,gr_EditNameLoad,gr_EditNameLCancel])
 
     def load_project(projname):
-        global g_projectname
-        g_projectname = projname
+        global params
+        params['projectname'] = projname
         projpath = save_proj_path +"/"+ projname+".json"
         load_from_json(projpath)
 
@@ -973,3 +1058,7 @@ def ui():
 
     gr_btn_stop.click(stop_everything_eventMy, None, None, queue=False)    
     gr_btn_stop_np.click(stop_everything_eventMy, None, None, queue=False)
+
+    include_last_history.change(lambda x: params.update({"include_history_nr": x}), include_last_history,None)
+    #gr_auto_clear.change(lambda x: params.update({"auto_clear": x}), gr_auto_clear, None)
+    gr_include_history.change(lambda x: params.update({"include_history": x}), gr_include_history, None) 
