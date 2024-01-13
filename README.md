@@ -6,7 +6,7 @@ WebUI extension for fiction writing (experiment) using LLM assistance in blocks 
 
 This is WIP (basic idea is done, but I HAVE BIGGER PLANS, whoaaa) and more info will come later (this is for oobabooga WebUI). It needs to reside in extensions/BlockWriter
 
-It's basically a structured way how to write short scenes where you instruct LLM what should be in the next scene. Unlike normal chat you can change the response (by writing in it), regenerate, etc... and the full text dynamically adjust to that.
+It's basically a structured way how to write short scenes where you instruct LLM what should be in the next scene. Unlike normal chat you can change the prompt and response at any time and history (by simply overwriting the text), regenerate, etc... and the full text dynamically adjust to that.
 
 ![image](https://github.com/FartyPants/BlockWriter/assets/23346289/8b1639c6-4cd0-4542-9c28-4f07946b4f9d)
 
