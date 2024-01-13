@@ -4,7 +4,7 @@ WebUI extension for fiction writing (experiment) using LLM assistance in blocks 
 [![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/Q5Q5MOB4M)
 
 
-This is WIP (basic idea is done, but I HAVE BIGGER PLANS, whoaaa) and more info will come later (this is for oobabooga WebUI). It needs to reside in extensions/BlockWriter
+This is WIP (basic idea is done, but I HAVE BIGGER PLANS, whoaaa). It needs to reside in extensions/BlockWriter
 
 It's basically a structured way how to write short scenes where you instruct LLM what should be in the next scene. Unlike normal chat you can change the prompt and response at any time and history (by simply overwriting the text), regenerate, etc... and the full text dynamically adjust to that.
 
