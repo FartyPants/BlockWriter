@@ -14,7 +14,15 @@ Note, you are always working on the selected scene. So rewriting prompt and hitt
 
 ![image](https://github.com/FartyPants/BlockWriter/assets/23346289/b5baf84f-e3e8-40cd-8c82-5700bc363000)
 
+Full text is always a dynamic reflection of the scenes
+
+![image](https://github.com/FartyPants/BlockWriter/assets/23346289/c0bca09d-cb8a-4436-a8df-0eaee052fc45)
+
+
 The project can be saved under unique name and then loaded later.
+
+![image](https://github.com/FartyPants/BlockWriter/assets/23346289/2bce2bcf-0bc4-4f7b-ad84-d7333a5b6050)
+
 
 # TODO
 - A block can be turned into Summary
