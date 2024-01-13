@@ -9,7 +9,7 @@ This is WIP (basic idea is done, but I HAVE BIGGER PLANS, whoaaa). It needs to r
 It's basically a structured way how to write short scenes where you instruct LLM what should be in the next scene. Unlike normal chat you can change the prompt and response at any time and history (by simply overwriting the text), regenerate, etc... and the full text dynamically adjust to that.
 
 ## Note
-I have a parallel project called DynaChat that is oriented on chatting with the model while uses simillar idea of dynamic history. https://github.com/FartyPants/DynaChat
+I have a parallel project called [DynaChat](https://github.com/FartyPants/DynaChat) that is oriented on chatting with the model while using simillar idea of dynamic history. 
 
 ![image](https://github.com/FartyPants/BlockWriter/assets/23346289/8b1639c6-4cd0-4542-9c28-4f07946b4f9d)
 
@@ -29,6 +29,6 @@ The project can be saved under unique name and then loaded later.
 
 # TODO
 - A block can be turned into Summary
-- create summary of the previous scenes
-- Settings how many previous blocks to insert before the prompt.
+- create summary of all the previous scenes
+
 
